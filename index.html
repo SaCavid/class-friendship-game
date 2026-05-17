@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Созвездие класса — играть онлайн</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap');
+
+  :root{
+    --night:#1a1a3e; --night2:#2d2a5c; --star:#ffd866;
+    --pink:#ff8fab; --pink-d:#e05780; --mint:#7ad9c4;
+    --cream:#fff8ee; --ink:#2a2456;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Comfortaa',sans-serif;color:var(--ink);
+    background:linear-gradient(160deg,#2d2a5c,#1a1a3e);
+    min-height:100vh;line-height:1.5;
+  }
+  button{font-family:'Comfortaa',sans-serif;cursor:pointer;}
+
+  /* ---- header ---- */
+  header{
+    display:flex;justify-content:space-between;align-items:center;
+    flex-wrap:wrap;gap:10px;padding:12px 18px;
+    background:rgba(0,0,0,.25);border-bottom:2px dotted var(--star);
+  }
+  .brand{font-weight:700;font-size:20px;color:var(--star);}
+  .code-chip{
+    display:flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.1);border:2px dashed var(--star);
+    padding:6px 12px;border-radius:30px;color:var(--cream);font-size:14px;
+  }
+  .code-chip b{font-size:20px;letter-spacing:3px;color:var(--star);}
+  .code-chip button{
+    background:var(--mint);border:none;border-radius:20px;
+    padding:6px 12px;font-weight:700;font-size:12px;color:var(--ink);
+  }
+  .hidden{display:none !important;}
+
+  /* ---- screens ---- */
+  .screen{padding:20px;}
+
+  /* ---- home ---- */
+  .home-card{
+    max-width:520px;margin:18px auto;background:var(--cream);
+    border-radius:24px;padding:26px;box-shadow:0 10px 40px rgba(0,0,0,.4);
+  }
+  .home-card h1{
+    text-align:center;color:var(--pink-d);font-size:28px;margin-bottom:4px;
+  }
+  .tagline{text-align:center;color:var(--night2);font-size:14px;margin-bottom:18px;}
+
+  .fld{display:block;margin:14px 0;}
+  .fld>span{display:block;font-weight:700;font-size:14px;margin-bottom:6px;color:var(--night2);}
+  .name-in{
+    width:100%;padding:11px 14px;border:2px solid var(--mint);
+    border-radius:14px;font-size:16px;font-family:'Comfortaa',sans-serif;
+  }
+  .swatches,.emojis{display:flex;flex-wrap:wrap;gap:8px;}
+  .sw{
+    width:38px;height:38px;border-radius:50%;border:3px solid #fff;
+    box-shadow:0 0 0 2px #ccc;
+  }
+  .sw.sel{box-shadow:0 0 0 3px var(--ink);transform:scale(1.12);}
+  .em{
+    width:42px;height:42px;border-radius:12px;border:2px solid #ddd;
+    background:#fff;font-size:22px;
+  }
+  .em.sel{border-color:var(--pink-d);background:#fff0f5;transform:scale(1.08);}
+
+  .home-actions{margin-top:20px;display:flex;flex-direction:column;gap:12px;}
+  .big-btn{
+    background:var(--pink-d);color:#fff;border:none;border-radius:16px;
+    padding:14px;font-size:17px;font-weight:700;
+    box-shadow:0 5px 0 #b03d63;
+  }
+  .big-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b03d63;}
+  .big-btn.alt{background:var(--night2);box-shadow:0 5px 0 #15123a;}
+  .big-btn:disabled{opacity:.5;box-shadow:none;}
+  .join-row{display:flex;gap:8px;}
+  .join-row input{
+    flex:1;padding:13px;border:2px solid var(--night2);border-radius:16px;
+    font-size:18px;text-align:center;text-transform:uppercase;letter-spacing:3px;
+    font-family:'Comfortaa',sans-serif;
+  }
+  .join-row .big-btn{flex:none;padding:14px 18px;}
+  .err{
+    margin-top:14px;background:#ffe2e2;color:#c0392b;
+    border-radius:12px;padding:10px;font-size:13px;text-align:center;
+  }
+  .divider{text-align:center;color:#aaa;font-size:13px;margin:6px 0;}
+
+  /* ---- game ---- */
+  .game-wrap{
+    display:flex;gap:18px;flex-wrap:wrap;
+    align-items:flex-start;justify-content:center;
+  }
+  .board-col{flex:0 0 auto;}
+  .side-col{flex:1 1 320px;max-width:420px;min-width:300px;}
+
+  .board-wrap{
+    width:min(540px,94vw);aspect-ratio:100/115;position:relative;
+    background:radial-gradient(circle at 30% 20%,#3d3578,#1a1a3e);
+    border-radius:22px;border:3px solid var(--night2);
+  }
+  .board-title{
+    position:absolute;top:1.5%;left:0;right:0;text-align:center;
+    color:var(--star);font-weight:700;font-size:clamp(13px,3vw,18px);
+  }
+  .board-path{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+  #cellsLayer,#tokensLayer{position:absolute;inset:0;}
+
+  .cell{
+    position:absolute;width:10%;aspect-ratio:1;border-radius:50%;
+    transform:translate(-50%,-50%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:#fff;text-align:center;box-shadow:0 3px 0 rgba(0,0,0,.35);
+    border:2px solid rgba(255,255,255,.55);
+  }
+  .cell .num{font-size:clamp(11px,2.5vw,15px);font-weight:700;}
+  .cell .lbl{font-size:clamp(6px,1.4vw,8px);line-height:1.1;}
+  .cell.end{width:14%;background:var(--star)!important;color:var(--ink);}
+  .cell.start{background:var(--mint)!important;color:var(--ink);}
+  .cell.hot{box-shadow:0 0 0 4px var(--star),0 3px 0 rgba(0,0,0,.35);z-index:3;}
+
+  .token{
+    position:absolute;width:9%;aspect-ratio:1;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:clamp(13px,2.6vw,18px);z-index:5;
+    border:3px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.5);
+    transition:left .45s ease,top .45s ease;
+  }
+  .token.dim{opacity:.4;}
+  .token.turn{animation:bob .8s ease-in-out infinite;}
+  @keyframes bob{0%,100%{margin-top:0;}50%{margin-top:-7px;}}
+
+  .legend{
+    display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;
+    margin-top:10px;color:var(--cream);font-size:12px;
+  }
+  .legend span{display:flex;align-items:center;gap:5px;}
+  .dot{width:13px;height:13px;border-radius:50%;}
+
+  /* ---- panels ---- */
+  .panel{
+    background:var(--cream);border-radius:18px;padding:14px 16px;margin-bottom:12px;
+  }
+  .panel h3{color:var(--pink-d);font-size:15px;margin-bottom:8px;}
+  .turn-banner{
+    background:var(--star);color:var(--ink);border-radius:16px;
+    padding:12px;text-align:center;font-weight:700;font-size:16px;margin-bottom:12px;
+  }
+  .turn-banner.me{background:var(--pink);color:#fff;animation:glow 1.2s infinite;}
+  @keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(255,143,171,.6);}50%{box-shadow:0 0 0 8px rgba(255,143,171,0);}}
+
+  .plist{display:flex;flex-direction:column;gap:7px;}
+  .prow{
+    display:flex;align-items:center;gap:9px;
+    background:#fff;border-radius:12px;padding:7px 10px;
+  }
+  .prow.current{outline:3px solid var(--star);}
+  .prow.off{opacity:.45;}
+  .pava{
+    width:34px;height:34px;border-radius:50%;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;border:3px solid #fff;box-shadow:0 0 0 2px #ddd;
+  }
+  .pname{font-weight:700;font-size:14px;flex:1;}
+  .ppos{font-size:11px;color:var(--night2);}
+  .tag{font-size:10px;background:var(--mint);color:var(--ink);
+    border-radius:8px;padding:2px 6px;font-weight:700;}
+  .tag.host{background:var(--star);}
+
+  .roll-btn{
+    width:100%;background:var(--pink-d);color:#fff;border:none;
+    border-radius:16px;padding:16px;font-size:18px;font-weight:700;
+    box-shadow:0 5px 0 #b03d63;
+  }
+  .roll-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b03d63;}
+  .roll-btn:disabled{opacity:.45;box-shadow:none;}
+  .start-btn{
+    width:100%;background:var(--mint);color:var(--ink);border:none;
+    border-radius:16px;padding:14px;font-size:17px;font-weight:700;
+    box-shadow:0 5px 0 #4fae98;margin-top:10px;
+  }
+  .start-btn:disabled{opacity:.5;box-shadow:none;}
+
+  .share-box{
+    background:#fffaf0;border:2px dashed var(--star);border-radius:12px;
+    padding:10px;font-size:13px;margin-bottom:8px;
+  }
+  .share-box b{color:var(--pink-d);letter-spacing:2px;font-size:16px;}
+  .wait{text-align:center;color:var(--night2);font-size:14px;padding:8px;}
+
+  .die{
+    font-size:46px;text-align:center;line-height:1;
+  }
+  .die.spin{animation:spin .5s ease;}
+  @keyframes spin{from{transform:rotate(-25deg) scale(.6);}to{transform:rotate(0) scale(1);}}
+  .roll-info{text-align:center;font-size:13px;color:var(--night2);margin:6px 0;}
+
+  .rorow{
+    display:flex;align-items:center;gap:8px;background:#fff;
+    border-radius:10px;padding:6px 10px;margin-bottom:6px;
+  }
+  .rorow .v{margin-left:auto;font-weight:700;font-size:18px;color:var(--pink-d);}
+
+  .log{max-height:160px;overflow-y:auto;font-size:12px;}
+  .log div{padding:3px 0;border-bottom:1px dotted #e6ddcc;color:var(--night2);}
+
+  details{margin-top:10px;font-size:13px;}
+  summary{cursor:pointer;font-weight:700;color:var(--pink-d);}
+  details ol{margin:6px 0 0 20px;}
+  details li{margin-bottom:4px;}
+
+  /* ---- card overlay ---- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(15,12,40,.82);
+    display:flex;align-items:center;justify-content:center;z-index:50;padding:18px;
+  }
+  .card-modal{
+    background:#fff;border-radius:22px;border:5px solid var(--pink-d);
+    max-width:380px;width:100%;overflow:hidden;text-align:center;
+    animation:pop .3s ease;
+  }
+  @keyframes pop{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .card-head{color:#fff;font-weight:700;font-size:16px;padding:12px;}
+  .card-icon{font-size:54px;margin:14px 0 4px;}
+  .card-text{padding:0 22px;font-size:16px;color:var(--ink);}
+  .card-foot{font-size:13px;color:var(--night2);margin:14px 0;}
+  .card-modal .roll-btn{border-radius:0;box-shadow:none;}
+  .card-modal .roll-btn:active{transform:none;}
+
+  .clap{
+    position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:90px;z-index:60;pointer-events:none;animation:clapf 1.1s ease forwards;
+  }
+  @keyframes clapf{0%{transform:scale(.4);opacity:0;}25%{transform:scale(1.1);opacity:1;}
+    75%{opacity:1;}100%{transform:scale(1.3);opacity:0;}}
+
+  .confetti{position:fixed;top:-30px;z-index:55;pointer-events:none;
+    animation:fall 3.2s linear forwards;}
+  @keyframes fall{to{transform:translateY(105vh) rotate(420deg);}}
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:10px 20px;border-radius:30px;
+    font-size:14px;z-index:70;animation:tin .3s ease;
+  }
+  @keyframes tin{from{opacity:0;transform:translate(-50%,12px);}}
+
+  .winbig{font-size:18px;text-align:center;}
+  .motto-in{
+    width:100%;padding:10px;border:2px solid var(--mint);border-radius:12px;
+    font-family:'Comfortaa',sans-serif;font-size:14px;resize:vertical;margin:8px 0;
+  }
+  .motto-show{
+    background:#fffaf0;border:2px dashed var(--star);border-radius:12px;
+    padding:10px;font-style:italic;text-align:center;margin:8px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">★ Созвездие класса ★</div>
+  <div id="codeChip" class="code-chip hidden">
+    Код игры: <b id="codeText"></b>
+    <button id="copyBtn">📋 Копировать</button>
+  </div>
+</header>
+
+<!-- ============ HOME ============ -->
+<div id="screen-home" class="screen">
+  <div class="home-card">
+    <h1>★ Созвездие класса ★</h1>
+    <p class="tagline">Космическая настольная игра о дружбе — для 3–4 игроков онлайн</p>
+
+    <div id="homeEditor"></div>
+
+    <div class="home-actions">
+      <button id="btnCreate" class="big-btn">🚀 Создать новую игру</button>
+      <div class="divider">— или присоединиться к друзьям —</div>
+      <div class="join-row">
+        <input id="joinCode" placeholder="КОД" maxlength="5">
+        <button id="btnJoin" class="big-btn alt">Войти</button>
+      </div>
+    </div>
+    <div id="homeError" class="err hidden"></div>
+  </div>
+</div>
+
+<!-- ============ GAME ============ -->
+<div id="screen-game" class="screen hidden">
+  <div class="game-wrap">
+    <div class="board-col">
+      <div class="board-wrap" id="boardWrap">
+        <div class="board-title">★ Галактика дружбы ★</div>
+        <svg class="board-path" id="boardPath" viewBox="0 0 100 115" preserveAspectRatio="none"></svg>
+        <div id="cellsLayer"></div>
+        <div id="tokensLayer"></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="side-col">
+      <div id="turnBanner" class="turn-banner"></div>
+      <div class="panel"><h3>Игроки</h3><div id="playersPanel" class="plist"></div></div>
+      <div id="lobbyPanel" class="panel hidden">
+        <h3>Твой космонавт</h3>
+        <div id="lobbyEditor"></div>
+        <div id="lobbyDynamic"></div>
+      </div>
+      <div id="rolloffPanel" class="panel hidden"></div>
+      <div id="playingPanel" class="panel hidden"></div>
+      <div id="finishedPanel" class="panel hidden"></div>
+      <div class="panel"><h3>Что происходит</h3><div id="logPanel" class="log"></div></div>
+    </div>
+  </div>
+</div>
+
+<div id="cardOverlay" class="overlay hidden"></div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+"use strict";
+
+/* ============ DATA ============ */
+const PALETTE = ['#ff5c8a','#ffa23a','#ffd23f','#5fc9a8','#3aa0ff','#9b6bff','#ff7ad9','#7ad9c4'];
+const EMOJIS  = ['👩‍🚀','🧑‍🚀','👨‍🚀','🚀','🛸','⭐','🌟','🪐','☄️','🌙','👽','🤖'];
+const FACES   = ['','⚀','⚁','⚂','⚃','⚄','⚅'];
+
+const TYPES = {
+  comp :{label:'Комплимент',     short:'Компл.',  color:'#ff8fab',emoji:'💗'},
+  tell :{label:'Расскажи о себе',short:'Расскажи',color:'#6fa8dc',emoji:'💙'},
+  guess:{label:'Угадай',         short:'Угадай',  color:'#5fc9a8',emoji:'💚'},
+  team :{label:'Вместе',         short:'Вместе',  color:'#b07ad9',emoji:'💜'},
+  good :{label:'Доброе дело',    short:'Доброе',  color:'#f0915a',emoji:'🧡'},
+  start:{label:'Старт',color:'#7ad9c4'},
+  end  :{label:'Финиш',color:'#ffd866'}
+};
+
+// board: index 0 = старт, 1..16 = звёзды, 17 = финиш.  [left%, top%, type]
+const CELLS = [
+  [8,12,'start'],[26,11,'comp'],[44,13,'tell'],[62,12,'guess'],[80,16,'team'],
+  [81,33,'good'],[63,37,'comp'],[45,40,'tell'],[26,38,'guess'],[9,42,'team'],
+  [10,58,'tell'],[28,63,'comp'],[46,60,'good'],[64,64,'guess'],[81,60,'team'],
+  [63,79,'comp'],[42,82,'tell'],[16,92,'end']
+];
+const END = 17;
+
+const CARDS = {
+  comp:[
+    {icon:'🌟',text:'Назови одно качество игрока справа от тебя, за которое его приятно иметь в команде.'},
+    {icon:'🌈',text:'Скажи каждому игроку по одному доброму слову. Не повторяйся!'},
+    {icon:'✨',text:'Скажи игроку слева, в чём он мог бы тебя научить — у него это здорово получается.'}
+  ],
+  tell:[
+    {icon:'😄',text:'Расскажи о своём самом смешном случае из жизни.'},
+    {icon:'🚀',text:'Кем ты мечтаешь стать и почему? Объясни за 30 секунд.'},
+    {icon:'⚡',text:'Если бы у тебя была суперсила — какая? Как бы ты помогал ею друзьям?'},
+    {icon:'🗺️',text:'Какое твоё самое любимое место и почему тебе там хорошо?'}
+  ],
+  guess:[
+    {icon:'🔍',text:'Загадай одноклассника (не из команды). Опиши его 3 хорошими качествами — пусть угадают, не называя имя.'},
+    {icon:'🎭',text:'Покажи без слов своё любимое занятие. Остальные угадывают!'},
+    {icon:'🦊',text:'Каждый тайно пишет, какое животное напоминает ему игрок справа. Сравните — совпало ли?'}
+  ],
+  team:[
+    {icon:'🤝',text:'Всей командой за 1 минуту назовите 5 вещей, которые любите все.'},
+    {icon:'🪐',text:'Придумайте всей командой название для вашей дружной планеты.'},
+    {icon:'📣',text:'Возьмитесь за руки и вместе придумайте короткую «кричалку дружбы».'}
+  ],
+  good:[
+    {icon:'💛',text:'Придумайте вместе, как поддержать друга, которому грустно. 3 идеи.'},
+    {icon:'🌷',text:'Придумайте, как помочь новенькому в классе почувствовать себя своим. 2 идеи.'},
+    {icon:'🌍',text:'Назовите доброе дело, которое команда может сделать для класса на этой неделе.'}
+  ]
+};
+
+/* ============ STATE ============ */
+let myProfile = loadProfile();
+let myId = null;          // мой peer id
+let amHost = false;
+let peer = null;
+let hostConn = null;            // joiner -> host
+const connections = {};         // host: peerId -> conn
+let gs = null;                  // game state (host: authority, joiner: copy)
+let scaffoldBuilt = false;
+let homeEditorBox, lobbyEditorBox;
+let seenClap = 0, seenRoll = '', seenPhase = '';
+let joinTimer = null;
+
+/* ============ UTILITIES ============ */
+const $ = id => document.getElementById(id);
+const d6 = () => Math.floor(Math.random()*6)+1;
+const pick = a => a[Math.floor(Math.random()*a.length)];
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function genCode(){
+  const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length:5},()=>A[Math.floor(Math.random()*A.length)]).join('');
+}
+function loadProfile(){
+  try{
+    const p=JSON.parse(localStorage.getItem('sozvezdie_profile_v1'));
+    if(p&&p.color&&p.emoji) return {name:p.name||'',color:p.color,emoji:p.emoji};
+  }catch(e){}
+  return {name:'',color:PALETTE[0],emoji:EMOJIS[0]};
+}
+function saveProfile(){
+  try{localStorage.setItem('sozvezdie_profile_v1',JSON.stringify(myProfile));}catch(e){}
+}
+function getPlayer(pid){return gs&&gs.players.find(p=>p.id===pid);}
+function pname(pid){const p=getPlayer(pid);return p?p.name:'игрок';}
+function currentPlayerId(){return gs.turnOrder[gs.currentTurnIndex];}
+function toast(msg){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2200);
+}
+
+/* ============ PROFILE EDITOR ============ */
+function buildEditor(box,prefix,onChange){
+  box.innerHTML=`
+    <label class="fld"><span>Имя</span>
+      <input id="${prefix}-name" class="name-in" maxlength="16" placeholder="Твоё имя"></label>
+    <div class="fld"><span>Цвет фишки</span>
+      <div class="swatches">${PALETTE.map(c=>
+        `<button class="sw" data-color="${c}" style="background:${c}"></button>`).join('')}</div></div>
+    <div class="fld"><span>Космонавт</span>
+      <div class="emojis">${EMOJIS.map(e=>
+        `<button class="em" data-emoji="${e}">${e}</button>`).join('')}</div></div>`;
+  const ni=box.querySelector('.name-in');
+  ni.value=myProfile.name;
+  ni.addEventListener('input',()=>onChange('name',ni.value.trim()));
+  box.querySelectorAll('[data-color]').forEach(b=>
+    b.onclick=()=>{onChange('color',b.dataset.color);markEditor(box);});
+  box.querySelectorAll('[data-emoji]').forEach(b=>
+    b.onclick=()=>{onChange('emoji',b.dataset.emoji);markEditor(box);});
+  markEditor(box);
+}
+function markEditor(box){
+  if(!box) return;
+  box.querySelectorAll('[data-color]').forEach(b=>
+    b.classList.toggle('sel',b.dataset.color===myProfile.color));
+  box.querySelectorAll('[data-emoji]').forEach(b=>
+    b.classList.toggle('sel',b.dataset.emoji===myProfile.emoji));
+  const ni=box.querySelector('.name-in');
+  if(ni&&document.activeElement!==ni) ni.value=myProfile.name;
+}
+
+/* ============ HOST: GAME LOGIC ============ */
+function initGameState(code){
+  gs={
+    phase:'lobby',gameId:code,hostId:myId,
+    players:[{id:myId,name:myProfile.name,color:myProfile.color,emoji:myProfile.emoji,
+              pos:0,connected:true,isHost:true}],
+    turnOrder:[],currentTurnIndex:0,lastRoll:null,activeCard:null,
+    rolloff:null,winner:null,motto:'',clap:0,
+    log:['🚀 '+myProfile.name+' создал(а) игру']
+  };
+}
+function freeColor(want){
+  const taken=gs.players.map(p=>p.color);
+  if(!taken.includes(want)) return want;
+  return PALETTE.find(c=>!taken.includes(c))||want;
+}
+function logPush(s){gs.log.push(s);if(gs.log.length>40)gs.log.shift();}
+
+function applyAction(pid,a){
+  if(!amHost||!gs) return;
+  switch(a.t){
+    case 'updateProfile':{
+      if(gs.phase!=='lobby') break;
+      const p=getPlayer(pid); if(!p) break;
+      if(typeof a.name==='string') p.name=a.name.slice(0,16)||p.name;
+      if(a.emoji) p.emoji=a.emoji;
+      if(a.color){
+        const taken=gs.players.filter(x=>x.id!==pid).map(x=>x.color);
+        if(!taken.includes(a.color)) p.color=a.color;
+      }
+      break;
+    }
+    case 'start':{
+      if(pid!==gs.hostId||gs.phase!=='lobby') break;
+      const n=gs.players.length;
+      if(n<3||n>4) break;
+      gs.phase='rolloff';
+      gs.rolloff={round:gs.players.map(p=>p.id),rolls:{}};
+      logPush('🎲 Жеребьёвка! Кто бросит больше — ходит первым.');
+      break;
+    }
+    case 'rolloff':{
+      if(gs.phase!=='rolloff') break;
+      const r=gs.rolloff;
+      if(!r.round.includes(pid)||(pid in r.rolls)) break;
+      r.rolls[pid]=d6();
+      logPush('🎲 '+pname(pid)+' выбросил(а) '+r.rolls[pid]);
+      checkRolloff();
+      break;
+    }
+    case 'roll':{
+      if(gs.phase!=='playing'||gs.activeCard) break;
+      if(currentPlayerId()!==pid) break;
+      doRoll(pid);
+      break;
+    }
+    case 'done':{
+      if(gs.phase!=='playing'||!gs.activeCard) break;
+      if(gs.activeCard.by!==pid) break;
+      logPush('👏 '+pname(pid)+' выполнил(а) задание!');
+      gs.activeCard=null;
+      gs.clap++;
+      advanceTurn();
+      break;
+    }
+    case 'motto':{
+      if(gs.phase==='finished'&&pid===gs.winner)
+        gs.motto=String(a.text||'').slice(0,160);
+      break;
+    }
+    case 'restart':{
+      if(pid!==gs.hostId) break;
+      gs.players=gs.players.filter(p=>p.connected);
+      gs.players.forEach(p=>p.pos=0);
+      Object.assign(gs,{phase:'lobby',turnOrder:[],currentTurnIndex:0,
+        lastRoll:null,activeCard:null,rolloff:null,winner:null,motto:''});
+      logPush('🔄 Новая игра! Ждём всех в лобби.');
+      break;
+    }
+  }
+  sync();
+}
+
+function checkRolloff(){
+  const r=gs.rolloff;
+  if(!r.round.every(id=>id in r.rolls)) return;
+  const max=Math.max(...r.round.map(id=>r.rolls[id]));
+  const winners=r.round.filter(id=>r.rolls[id]===max);
+  if(winners.length===1){
+    startPlaying(winners[0]);
+  }else{
+    logPush('🤝 Ничья ('+max+')! Перебрасывают: '+winners.map(pname).join(', '));
+    r.round=winners; r.rolls={};
+  }
+}
+function startPlaying(starterId){
+  const order=gs.players.map(p=>p.id);
+  const si=order.indexOf(starterId);
+  gs.turnOrder=order.slice(si).concat(order.slice(0,si));
+  gs.currentTurnIndex=0;
+  gs.phase='playing';
+  gs.rolloff=null;
+  logPush('🌟 Первой(ым) ходит '+pname(starterId)+'! Поехали по часовой стрелке.');
+}
+function doRoll(pid){
+  const v=d6(), p=getPlayer(pid);
+  gs.lastRoll={by:pid,value:v,id:Date.now()};
+  let np=p.pos+v;
+  if(np>=END){
+    p.pos=END; gs.winner=pid; gs.phase='finished'; gs.activeCard=null;
+    logPush('🏆 '+p.name+' выбросил(а) '+v+' и дошёл(ла) до Созвездия дружбы!');
+    return;
+  }
+  p.pos=np;
+  const type=CELLS[np][2];
+  const card=pick(CARDS[type]);
+  gs.activeCard={by:pid,cell:np,type,icon:card.icon,text:card.text};
+  logPush('🎲 '+p.name+' выбросил(а) '+v+' → звезда '+np+' «'+TYPES[type].label+'»');
+}
+function advanceTurn(){
+  const o=gs.turnOrder;
+  for(let n=1;n<=o.length;n++){
+    const i=(gs.currentTurnIndex+n)%o.length;
+    const p=getPlayer(o[i]);
+    if(p&&p.connected){gs.currentTurnIndex=i;return;}
+  }
+}
+function handleLeave(pid){
+  const p=getPlayer(pid); if(!p) return;
+  delete connections[pid];
+  if(gs.phase==='lobby'){
+    gs.players=gs.players.filter(x=>x.id!==pid);
+    logPush('👋 '+p.name+' вышел(ла) из лобби');
+  }else{
+    p.connected=false;
+    logPush('📡 '+p.name+' потерял(а) связь');
+    if(gs.phase==='playing'&&currentPlayerId()===pid){
+      if(gs.activeCard&&gs.activeCard.by===pid) gs.activeCard=null;
+      advanceTurn();
+    }
+    if(gs.phase==='rolloff'){
+      gs.rolloff.round=gs.rolloff.round.filter(x=>x!==pid);
+      delete gs.rolloff.rolls[pid];
+      if(gs.rolloff.round.length) checkRolloff();
+    }
+  }
+  sync();
+}
+
+/* ============ NETWORK ============ */
+function sync(){           // host: broadcast + render
+  const msg={t:'state',state:gs};
+  Object.values(connections).forEach(c=>{try{c.send(msg);}catch(e){}});
+  render();
+}
+function act(a){           // send an action toward the authority
+  if(amHost) applyAction(myId,a);
+  else if(hostConn&&hostConn.open) hostConn.send({t:'action',a});
+}
+
+function startHost(code){
+  showConnecting('Создаём игру…');
+  peer=new Peer('sozv-'+code);
+  peer.on('open',id=>{
+    myId=id; amHost=true;
+    initGameState(code);
+    hideConnecting();
+    enterGame();
+  });
+  peer.on('connection',setupHostConn);
+  peer.on('disconnected',()=>{try{peer.reconnect();}catch(e){}});
+  peer.on('error',e=>{
+    if(e.type==='unavailable-id'){
+      peer.destroy(); startHost(genCode());          // код занят — берём новый
+    }else{
+      hideConnecting();
+      homeError('Ошибка соединения: '+e.type+'. Попробуй ещё раз.');
+    }
+  });
+}
+function setupHostConn(conn){
+  conn.on('data',msg=>{
+    if(msg.t==='hello'){
+      if(gs.phase!=='lobby'){reject(conn,'Игра уже началась');return;}
+      if(gs.players.length>=4){reject(conn,'В игре уже 4 игрока');return;}
+      if(getPlayer(conn.peer)) return;
+      connections[conn.peer]=conn;
+      gs.players.push({
+        id:conn.peer,name:(msg.profile.name||'Космонавт').slice(0,16),
+        color:freeColor(msg.profile.color),emoji:msg.profile.emoji||EMOJIS[0],
+        pos:0,connected:true,isHost:false
+      });
+      logPush('✨ '+getPlayer(conn.peer).name+' присоединил(ся/ась) к игре');
+      sync();
+    }else if(msg.t==='action'){
+      applyAction(conn.peer,msg.a);
+    }
+  });
+  conn.on('close',()=>handleLeave(conn.peer));
+  conn.on('error',()=>handleLeave(conn.peer));
+}
+function reject(conn,reason){
+  try{conn.send({t:'rejected',reason});}catch(e){}
+  setTimeout(()=>{try{conn.close();}catch(e){}},400);
+}
+
+function startJoiner(code){
+  showConnecting('Подключаемся к игре…');
+  peer=new Peer();
+  peer.on('open',id=>{
+    myId=id; amHost=false;
+    hostConn=peer.connect('sozv-'+code,{reliable:true});
+    hostConn.on('open',()=>{
+      clearTimeout(joinTimer);
+      hostConn.send({t:'hello',profile:myProfile});
+    });
+    hostConn.on('data',msg=>{
+      if(msg.t==='state'){
+        const first=!gs;
+        gs=msg.state;
+        if(first){hideConnecting();enterGame();}
+        else render();
+      }else if(msg.t==='rejected'){
+        peer.destroy();hideConnecting();
+        homeError(msg.reason||'Не удалось присоединиться');
+      }
+    });
+    hostConn.on('close',()=>fatal('Связь с ведущим потеряна. Игра завершена.'));
+    hostConn.on('error',()=>fatal('Связь с ведущим потеряна.'));
+    joinTimer=setTimeout(()=>{
+      if(!gs){peer.destroy();hideConnecting();
+        homeError('Игра с кодом «'+code+'» не найдена. Проверь код.');}
+    },14000);
+  });
+  peer.on('error',e=>{
+    clearTimeout(joinTimer);
+    if(e.type==='peer-unavailable'){
+      hideConnecting();homeError('Игра с таким кодом не найдена.');
+    }else if(!gs){
+      hideConnecting();homeError('Ошибка соединения: '+e.type);
+    }
+  });
+}
+function fatal(msg){
+  const o=$('cardOverlay');
+  o.className='overlay';
+  o.innerHTML=`<div class="card-modal" style="border-color:#c0392b">
+    <div class="card-head" style="background:#c0392b">Соединение прервано</div>
+    <div class="card-icon">📡</div>
+    <div class="card-text">${esc(msg)}</div>
+    <div class="card-foot"></div>
+    <button class="roll-btn" onclick="location.reload()">На главную</button></div>`;
+}
+
+/* ============ CONNECTING / ERROR UI ============ */
+function showConnecting(txt){
+  $('btnCreate').disabled=$('btnJoin').disabled=true;
+  let o=$('connOverlay');
+  if(!o){o=document.createElement('div');o.id='connOverlay';o.className='overlay';
+    document.body.appendChild(o);}
+  o.innerHTML=`<div class="card-modal"><div class="card-head" style="background:var(--night2)">Подождите…</div>
+    <div class="card-icon">🛰️</div><div class="card-text">${esc(txt)}</div>
+    <div class="card-foot">соединяемся через космос</div></div>`;
+}
+function hideConnecting(){
+  $('btnCreate').disabled=$('btnJoin').disabled=false;
+  const o=$('connOverlay');if(o)o.remove();
+}
+function homeError(msg){
+  const e=$('homeError');e.textContent=msg;e.classList.remove('hidden');
+}
+
+/* ============ SCREENS ============ */
+function enterGame(){
+  $('screen-home').classList.add('hidden');
+  $('screen-game').classList.remove('hidden');
+  $('codeChip').classList.remove('hidden');
+  $('codeText').textContent=gs.gameId;
+  if(!scaffoldBuilt) buildScaffold();
+  render();
+}
+function buildScaffold(){
+  // board cells
+  const cl=$('cellsLayer');
+  cl.innerHTML=CELLS.map((c,i)=>{
+    const t=TYPES[c[2]];
+    let inner;
+    if(c[2]==='start') inner=`<div class="num">🚀</div><div class="lbl">СТАРТ</div>`;
+    else if(c[2]==='end') inner=`<div class="num">🏆</div><div class="lbl">СОЗВЕЗДИЕ<br>ДРУЖБЫ</div>`;
+    else inner=`<div class="num">${i}</div><div class="lbl">${t.short}</div>`;
+    return `<div class="cell ${c[2]}" data-cell="${i}"
+      style="left:${c[0]}%;top:${c[1]}%;background:${t.color}">${inner}</div>`;
+  }).join('');
+  // path
+  const pts=CELLS.map(c=>`${c[0]},${(c[1]*1.15).toFixed(1)}`).join(' ');
+  $('boardPath').innerHTML=
+    `<polyline points="${pts}" fill="none" stroke="#ffd866" stroke-width="1.1"
+      stroke-dasharray="2 2" stroke-linejoin="round" opacity="0.55"/>`;
+  // legend
+  $('legend').innerHTML=['comp','tell','guess','team','good'].map(k=>
+    `<span><i class="dot" style="background:${TYPES[k].color}"></i>${TYPES[k].label}</span>`).join('');
+  // lobby editor (built once -> no focus loss while typing)
+  lobbyEditorBox=$('lobbyEditor');
+  buildEditor(lobbyEditorBox,'lob',(field,val)=>{
+    myProfile[field]=val;saveProfile();act({t:'updateProfile',[field]:val});
+  });
+  scaffoldBuilt=true;
+}
+
+/* ============ RENDER ============ */
+function render(){
+  if(!gs) return;
+  const me=getPlayer(myId);
+  // keep my editor in sync with what the host actually assigned
+  if(gs.phase==='lobby'&&me){
+    myProfile.color=me.color;myProfile.emoji=me.emoji;
+    if(document.activeElement!==lobbyEditorBox.querySelector('.name-in'))
+      myProfile.name=me.name;
+    markEditor(lobbyEditorBox);
+  }
+  renderBanner(me);
+  renderPlayers();
+  renderTokens();
+  renderCells();
+  renderLog();
+  // panels
+  togglePanel('lobbyPanel',gs.phase==='lobby');
+  togglePanel('rolloffPanel',gs.phase==='rolloff');
+  togglePanel('playingPanel',gs.phase==='playing');
+  togglePanel('finishedPanel',gs.phase==='finished');
+  if(gs.phase==='lobby')   renderLobby();
+  if(gs.phase==='rolloff') renderRolloff();
+  if(gs.phase==='playing') renderPlaying(me);
+  if(gs.phase==='finished')renderFinished(me);
+  renderCard(me);
+  // effects
+  if(gs.clap>seenClap){seenClap=gs.clap;showClap();}
+  if(gs.lastRoll&&gs.lastRoll.id!==seenRoll){seenRoll=gs.lastRoll.id;}
+  if(gs.phase==='finished'&&seenPhase!=='finished') confetti();
+  seenPhase=gs.phase;
+}
+function togglePanel(id,on){$(id).classList.toggle('hidden',!on);}
+
+function renderBanner(me){
+  const b=$('turnBanner');b.className='turn-banner';
+  if(gs.phase==='lobby'){b.textContent='👋 Лобби — ждём игроков ('+gs.players.length+'/4)';}
+  else if(gs.phase==='rolloff'){b.textContent='🎲 Жеребьёвка — кто ходит первым?';}
+  else if(gs.phase==='playing'){
+    const cur=getPlayer(currentPlayerId());
+    if(cur&&cur.id===myId){b.textContent='⭐ Твой ход!';b.classList.add('me');}
+    else b.textContent='Ходит: '+(cur?cur.emoji+' '+cur.name:'…');
+  }
+  else if(gs.phase==='finished'){
+    const w=getPlayer(gs.winner);
+    b.textContent='🏆 Победа: '+(w?w.emoji+' '+w.name:'');
+  }
+}
+function renderPlayers(){
+  const cur=gs.phase==='playing'?currentPlayerId():null;
+  $('playersPanel').innerHTML=gs.players.map(p=>{
+    let pos='на старте';
+    if(p.pos===END)pos='🏆 финиш';else if(p.pos>0)pos='звезда '+p.pos;
+    return `<div class="prow ${p.id===cur?'current':''} ${p.connected?'':'off'}">
+      <div class="pava" style="background:${p.color}">${p.emoji}</div>
+      <div style="flex:1">
+        <div class="pname">${esc(p.name)}</div>
+        <div class="ppos">${pos}</div>
+      </div>
+      ${p.isHost?'<span class="tag host">ведущий</span>':''}
+      ${p.id===myId?'<span class="tag">ты</span>':''}
+    </div>`;
+  }).join('');
+}
+function renderTokens(){
+  const layer=$('tokensLayer');
+  const byCell={};
+  gs.players.forEach(p=>{(byCell[p.pos]=byCell[p.pos]||[]).push(p);});
+  const cur=gs.phase==='playing'?currentPlayerId():null;
+  gs.players.forEach(p=>{
+    let el=layer.querySelector('[data-tok="'+p.id+'"]');
+    if(!el){
+      el=document.createElement('div');el.className='token';
+      el.dataset.tok=p.id;layer.appendChild(el);
+    }
+    const group=byCell[p.pos],idx=group.indexOf(p),n=group.length;
+    const dx=(idx-(n-1)/2)*8;          // spread tokens sharing a cell
+    el.style.left=CELLS[p.pos][0]+'%';
+    el.style.top=CELLS[p.pos][1]+'%';
+    el.style.transform=`translate(calc(-50% + ${dx}px),-50%)`;
+    el.style.background=p.color;
+    el.textContent=p.emoji;
+    el.classList.toggle('dim',!p.connected);
+    el.classList.toggle('turn',p.id===cur);
+  });
+  // drop tokens for players that left in lobby
+  layer.querySelectorAll('[data-tok]').forEach(el=>{
+    if(!getPlayer(el.dataset.tok)) el.remove();
+  });
+}
+function renderCells(){
+  const hot=gs.activeCard?gs.activeCard.cell:-1;
+  $('cellsLayer').querySelectorAll('.cell').forEach(c=>
+    c.classList.toggle('hot',+c.dataset.cell===hot));
+}
+function renderLog(){
+  $('logPanel').innerHTML=gs.log.slice(-12).reverse()
+    .map(l=>`<div>${esc(l)}</div>`).join('');
+}
+
+function renderLobby(){
+  const n=gs.players.length, ok=n>=3&&n<=4;
+  let html=`<div class="share-box">
+    Игроков: <b>${n}/4</b> · нужно 3–4.<br>
+    Скажи друзьям код <b>${gs.gameId}</b> или нажми «Копировать» вверху —
+    они откроют эту страницу и нажмут «Войти».</div>`;
+  if(amHost){
+    html+=`<button class="start-btn" id="startBtn" ${ok?'':'disabled'}>
+      ${ok?'Начать игру 🚀':'Нужно 3–4 игрока'}</button>`;
+  }else{
+    html+=`<div class="wait">⏳ Ждём, когда ведущий начнёт игру…</div>`;
+  }
+  html+=`<details><summary>📖 Правила</summary><ol>
+    <li>Сначала жеребьёвка: все бросают кубик, кто больше — ходит первым.</li>
+    <li>Дальше ходят по часовой стрелке. В свой ход бросаешь кубик и двигаешь фишку.</li>
+    <li>На какой цвет звезды попал — выполняешь задание с карточки вслух.</li>
+    <li>После задания все аплодируют 👏 и ход переходит дальше.</li>
+    <li>Кто первым дошёл до «Созвездия дружбы» — побеждает и придумывает девиз команды.</li>
+    </ol></details>`;
+  setHTML($('lobbyDynamic'),html);
+  const sb=$('startBtn');
+  if(sb) sb.onclick=()=>act({t:'start'});
+}
+function renderRolloff(){
+  const r=gs.rolloff;
+  const iRoll=r.round.includes(myId)&&!(myId in r.rolls);
+  let html=`<h3>Жеребьёвка 🎲</h3>
+    <p class="roll-info">Кто выбросит больше — ходит первым. При ничье бросают заново.</p>`;
+  html+=gs.players.map(p=>{
+    let v;
+    if(p.id in r.rolls) v=`<span class="v">${r.rolls[p.id]}</span>`;
+    else if(r.round.includes(p.id)) v=`<span class="v" style="color:#bbb">…</span>`;
+    else v=`<span class="ppos">не первым</span>`;
+    return `<div class="rorow">
+      <div class="pava" style="background:${p.color};width:28px;height:28px;font-size:15px">${p.emoji}</div>
+      <span class="pname">${esc(p.name)}</span>${v}</div>`;
+  }).join('');
+  if(iRoll) html+=`<button class="roll-btn" id="roBtn">Бросить кубик 🎲</button>`;
+  else if(r.round.includes(myId)) html+=`<div class="wait">Ждём остальных…</div>`;
+  setHTML($('rolloffPanel'),html);
+  const b=$('roBtn');if(b)b.onclick=()=>act({t:'rolloff'});
+}
+function renderPlaying(me){
+  const myTurn=currentPlayerId()===myId;
+  let html='<h3>Ход игры</h3>';
+  if(gs.lastRoll){
+    const v=gs.lastRoll.value;
+    html+=`<div class="die ${gs.lastRoll.id!==seenRoll?'spin':''}">${FACES[v]}</div>
+      <div class="roll-info">${esc(pname(gs.lastRoll.by))} выбросил(а) ${v}</div>`;
+  }
+  if(gs.activeCard){
+    html+=`<div class="wait">📜 ${esc(pname(gs.activeCard.by))} выполняет задание…</div>`;
+  }else if(myTurn){
+    html+=`<button class="roll-btn" id="rollBtn">Бросить кубик 🎲</button>`;
+  }else{
+    html+=`<div class="wait">Ход игрока ${esc(pname(currentPlayerId()))}. Жди свой ход.</div>`;
+  }
+  // turn order
+  html+=`<p class="roll-info" style="margin-top:10px">Порядок ходов:</p>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">`+
+    gs.turnOrder.map((id,i)=>{
+      const p=getPlayer(id);
+      return `<span class="tag" style="background:${i===gs.currentTurnIndex?'var(--star)':'#eee'}">
+        ${p?p.emoji+' '+esc(p.name):''}</span>`;
+    }).join('')+`</div>`;
+  setHTML($('playingPanel'),html);
+  const b=$('rollBtn');if(b)b.onclick=()=>act({t:'roll'});
+}
+function renderFinished(me){
+  const w=getPlayer(gs.winner);
+  let html=`<h3>Игра окончена 🎉</h3>
+    <p class="winbig">🏆 Победитель: <b>${w?w.emoji+' '+esc(w.name):''}</b></p>`;
+  // standings
+  const sorted=[...gs.players].sort((a,b)=>b.pos-a.pos);
+  html+=`<p class="roll-info">Все молодцы — итог:</p>`+
+    sorted.map((p,i)=>`<div class="rorow">
+      <span style="width:20px;text-align:center">${i+1}</span>
+      <div class="pava" style="background:${p.color};width:26px;height:26px;font-size:14px">${p.emoji}</div>
+      <span class="pname">${esc(p.name)}</span>
+      <span class="ppos">${p.pos===END?'🏆':'звезда '+p.pos}</span></div>`).join('');
+  // motto
+  if(gs.winner===myId){
+    html+=`<p class="roll-info" style="margin-top:10px">Придумай девиз команды:</p>
+      <textarea class="motto-in" id="motto" rows="2"
+        placeholder="Наш девиз…">${esc(gs.motto)}</textarea>
+      <button class="start-btn" id="mottoBtn">Сохранить девиз ✨</button>`;
+  }else if(gs.motto){
+    html+=`<div class="motto-show">«${esc(gs.motto)}»</div>`;
+  }else{
+    html+=`<div class="wait">Победитель придумывает девиз команды…</div>`;
+  }
+  // restart
+  if(amHost) html+=`<button class="start-btn" id="restartBtn" style="margin-top:12px">
+    Играть снова 🔄</button>`;
+  else html+=`<div class="wait">Ждём, когда ведущий начнёт новую игру…</div>`;
+  setHTML($('finishedPanel'),html);
+  const mb=$('mottoBtn');
+  if(mb) mb.onclick=()=>{act({t:'motto',text:$('motto').value});toast('Девиз сохранён!');};
+  const rb=$('restartBtn');
+  if(rb) rb.onclick=()=>act({t:'restart'});
+}
+function renderCard(me){
+  const o=$('cardOverlay');
+  if(!gs.activeCard){o.classList.add('hidden');o.innerHTML='';return;}
+  const c=gs.activeCard,t=TYPES[c.type];
+  const mine=c.by===myId;
+  const who=getPlayer(c.by);
+  o.classList.remove('hidden');
+  o.innerHTML=`<div class="card-modal" style="border-color:${t.color}">
+    <div class="card-head" style="background:${t.color}">${t.emoji} ${t.label} · звезда ${c.cell}</div>
+    <div class="card-icon">${c.icon}</div>
+    <div class="card-text">${esc(c.text)}</div>
+    <div class="card-foot">Задание для: ${who?who.emoji+' '+esc(who.name):''}</div>
+    ${mine
+      ? `<button class="roll-btn" id="doneBtn" style="background:${t.color}">Готово 👏</button>`
+      : `<div class="card-foot" style="padding-bottom:14px">⏳ ждём, пока игрок выполнит задание</div>`}
+  </div>`;
+  const db=$('doneBtn');
+  if(db) db.onclick=()=>act({t:'done'});
+}
+
+/* helper: replace innerHTML but keep focus/caret of a text field */
+function setHTML(el,html){
+  const a=document.activeElement;
+  let r=null;
+  if(a&&el.contains(a)&&a.id&&'selectionStart' in a)
+    r={id:a.id,s:a.selectionStart,e:a.selectionEnd};
+  el.innerHTML=html;
+  if(r){const n=$(r.id);if(n){n.focus();try{n.setSelectionRange(r.s,r.e);}catch(e){}}}
+}
+
+/* ============ EFFECTS ============ */
+function showClap(){
+  const c=document.createElement('div');c.className='clap';c.textContent='👏';
+  document.body.appendChild(c);setTimeout(()=>c.remove(),1100);
+}
+function confetti(){
+  const set=['🎉','⭐','🌟','✨','🏆','💫','🎊','🚀'];
+  for(let i=0;i<40;i++){
+    const s=document.createElement('div');
+    s.className='confetti';s.textContent=set[i%set.length];
+    s.style.left=Math.random()*100+'vw';
+    s.style.fontSize=(14+Math.random()*22)+'px';
+    s.style.animationDelay=(Math.random()*0.8)+'s';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),4200);
+  }
+}
+
+/* ============ HOME WIRING ============ */
+homeEditorBox=$('homeEditor');
+buildEditor(homeEditorBox,'home',(field,val)=>{myProfile[field]=val;saveProfile();});
+
+function checkName(){
+  if(!myProfile.name||!myProfile.name.trim()){
+    homeError('Сначала впиши своё имя 🙂');
+    return false;
+  }
+  $('homeError').classList.add('hidden');
+  return true;
+}
+$('btnCreate').onclick=()=>{
+  if(!checkName())return;
+  saveProfile();
+  startHost(genCode());
+};
+$('btnJoin').onclick=()=>{
+  if(!checkName())return;
+  const code=$('joinCode').value.trim().toUpperCase();
+  if(code.length<4){homeError('Введи код игры (5 символов).');return;}
+  saveProfile();
+  startJoiner(code);
+};
+$('joinCode').addEventListener('input',e=>{
+  e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+});
+$('copyBtn').onclick=()=>{
+  const link=location.origin+location.pathname+'#'+gs.gameId;
+  const txt=navigator.clipboard?link:gs.gameId;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(link)
+      .then(()=>toast('Ссылка скопирована — отправь друзьям!'))
+      .catch(()=>toast('Код игры: '+gs.gameId));
+  }else{
+    toast('Код игры: '+gs.gameId);
+  }
+};
+// auto-fill code from #HASH link
+if(location.hash.length>1){
+  $('joinCode').value=location.hash.slice(1).toUpperCase().replace(/[^A-Z0-9]/g,'');
+}
+</script>
+</body>
+</html>
